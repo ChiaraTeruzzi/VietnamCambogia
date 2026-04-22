@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vietnam & Cambogia — 27 Dic – 13 Gen</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  :root {
+    --sand:    #F5F0E8;
+    --cream:   #FDFBF7;
+    --paper:   #FFFFFF;
+    --warm:    #EDE8DE;
+    --ink:     #1C1917;
+    --ink2:    #44403C;
+    --muted:   #78716C;
+    --light:   #A8A29E;
+    --accent:  #B45309;
+    --accent2: #0369A1;
+    --vn:      #DC4B2A;
+    --kh:      #7C3AED;
+    --mk:      #059669;
+    --ha:      #0284C7;
+    --dn:      #D97706;
+    --border:  #E7E2D8;
+    --r: 14px;
+    --shadow: 0 2px 16px rgba(0,0,0,0.07);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; font-size:16px; }
+  body {
+    background: var(--sand);
+    color: var(--ink);
+    font-family: 'Source Sans 3', sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
+  /* ── NAV ─────────────────────────────────────── */
+  nav {
+    position: sticky; top:0; z-index:200;
+    background: rgba(253,251,247,0.95);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-brand {
+    font-family: 'Lora', serif; font-size: 1.05rem; color: var(--accent);
+    display: flex; align-items: center; gap: 8px; text-decoration: none;
+  }
+  .nav-links { display: flex; gap: 1.8rem; }
+  .nav-links a {
+    font-size: 0.82rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--muted); text-decoration: none; transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+
+  /* ── HERO ─────────────────────────────────────── */
+  .hero {
+    position: relative;
+    height: 92vh; min-height: 560px;
+    overflow: hidden;
+    display: flex; align-items: flex-end;
+  }
+  .hero-img {
+    position: absolute; inset: 0;
+    background: url('https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&fit=crop&w=1600&q=85') center/cover no-repeat,
+                linear-gradient(135deg, #0a5c7a 0%, #1a7a5e 50%, #2d4a6e 100%);
+  }
+  .hero-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.2) 50%, transparent 100%);
+  }
+  .hero-content {
+    position: relative; padding: 3rem 4rem 4rem;
+    max-width: 820px;
+  }
+  .hero-flags {
+    display: flex; gap: 8px; margin-bottom: 1.2rem;
+  }
+  .flag-tag {
+    background: rgba(255,255,255,0.15); backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: #fff; font-size: 0.75rem; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 4px 12px; border-radius: 99px;
+  }
+  .hero h1 {
+    font-family: 'Lora', serif;
+    font-size: clamp(2.6rem, 5.5vw, 4.8rem);
+    color: #fff; line-height: 1.08; font-weight: 600;
+    margin-bottom: 1rem;
+  }
+  .hero h1 em { font-style: italic; color: #F9D68A; }
+  .hero-meta {
+    color: rgba(255,255,255,0.8); font-size: 1rem; margin-bottom: 2rem;
+    font-weight: 300; letter-spacing: 0.02em;
+  }
+  .hero-stats {
+    display: flex; gap: 2.5rem; flex-wrap: wrap;
+  }
+  .hstat { text-align: left; }
+  .hstat-n {
+    font-family: 'Lora', serif; font-size: 2.2rem; font-weight: 600;
+    color: #F9D68A; display: block; line-height: 1;
+  }
+  .hstat-l { font-size: 0.72rem; color: rgba(255,255,255,0.65); text-transform: uppercase; letter-spacing: 0.1em; }
+
+  /* ── SECTIONS ─────────────────────────────────── */
+  .section { padding: 5rem 2rem; max-width: 1160px; margin: 0 auto; }
+  .eyebrow {
+    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.18em;
+    font-weight: 600; color: var(--accent); margin-bottom: 0.5rem;
+  }
+  .section-title {
+    font-family: 'Lora', serif; font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+    color: var(--ink); margin-bottom: 0.6rem; line-height: 1.2;
+  }
+  .section-lead { color: var(--muted); max-width: 580px; font-size: 1rem; line-height: 1.7; margin-bottom: 2.5rem; }
+
+  /* ── PHOTO GRID ───────────────────────────────── */
+  .photo-strip {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: 220px 220px;
+    gap: 8px; border-radius: var(--r); overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+  .photo-strip .p-main { grid-row: 1 / 3; }
+  .photo-strip .p-cell {
+    overflow: hidden; position: relative;
+  }
+  .photo-strip .p-cell img {
+    width:100%; height:100%; object-fit:cover;
+    transition: transform .5s ease;
+    display: block;
+  }
+  .photo-strip .p-cell:hover img { transform: scale(1.04); }
+  .photo-cap {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 8px 12px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.55));
+    color: #fff; font-size: 0.72rem; font-weight: 500;
+    letter-spacing: 0.06em;
+  }
+
+  /* ── MAP ──────────────────────────────────────── */
+  .map-section {
+    background: var(--cream);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 5rem 2rem;
+  }
+  .map-inner { max-width: 1160px; margin: 0 auto; }
+  #travel-map {
+    height: 520px; border-radius: var(--r);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .map-legend {
+    display: flex; gap: 1.2rem; flex-wrap: wrap;
+    margin-top: 1rem;
+    padding: 0.8rem 1rem;
+    background: var(--paper); border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+  .leg { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--ink2); }
+  .leg-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── ITINERARY ────────────────────────────────── */
+  .phase-title {
+    display: flex; align-items: center; gap: 12px;
+    padding: 1rem 0 0.8rem;
+    margin-bottom: 1.2rem;
+    border-bottom: 2px solid var(--border);
+  }
+  .phase-pip { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+  .phase-name { font-family: 'Lora', serif; font-size: 1.35rem; color: var(--ink); }
+  .phase-range { font-size: 0.8rem; color: var(--light); margin-left: auto; }
+  .days-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem; margin-bottom: 3rem;
+  }
+  .day-card {
+    background: var(--paper);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    transition: transform .2s, box-shadow .2s;
+  }
+  .day-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.11);
+  }
+  .day-img {
+    width: 100%; height: 160px; object-fit: cover; display: block;
+  }
+  .day-img-placeholder {
+    width: 100%; height: 160px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2.5rem;
+  }
+  .day-body { padding: 1rem 1.2rem 1rem; }
+  .day-head { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 0.6rem; }
+  .day-badge {
+    min-width: 46px; height: 46px; border-radius: 10px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 600; line-height: 1.1; flex-shrink: 0;
+  }
+  .day-badge .dn { font-size: 1.25rem; font-family: 'Lora', serif; font-weight: 600; }
+  .day-info h3 { font-size: 0.95rem; font-weight: 600; color: var(--ink); margin-bottom: 2px; }
+  .day-loc { font-size: 0.72rem; color: var(--muted); }
+  .day-desc { font-size: 0.84rem; color: var(--ink2); line-height: 1.6; margin-bottom: 0.8rem; }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .chip {
+    font-size: 0.7rem; padding: 2px 9px; border-radius: 99px;
+    background: var(--sand); color: var(--ink2);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; gap: 3px;
+  }
+  .day-star {
+    background: #FFFBEB; border-top: 1px solid #FDE68A;
+    font-size: 0.72rem; color: #92400E; font-weight: 600;
+    padding: 5px 1.2rem;
+    display: flex; align-items: center; gap: 5px;
+  }
+
+  /* ── COST TABLE ───────────────────────────────── */
+  .bg-cream { background: var(--cream); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .cost-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
+    gap: 1rem; margin: 2rem 0 1.5rem;
+  }
+  .cost-card {
+    background: var(--paper); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 1.2rem;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+  }
+  .cost-icon { font-size: 1.5rem; margin-bottom: 0.5rem; display: block; }
+  .cost-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--light); margin-bottom: 4px; }
+  .cost-val { font-family: 'Lora', serif; font-size: 1.3rem; color: var(--accent); }
+  .cost-sub { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+  .cost-total-box {
+    background: var(--accent); color: #fff;
+    border-radius: var(--r); padding: 1.8rem 2.2rem;
+    display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+  }
+  .ct-label { font-size: 0.82rem; opacity: 0.8; margin-bottom: 4px; }
+  .ct-val { font-family: 'Lora', serif; font-size: 2.4rem; font-weight: 600; }
+  .ct-sub { font-size: 0.78rem; opacity: 0.75; margin-top: 4px; }
+
+  /* ── TIPS ─────────────────────────────────────── */
+  .tips-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 1rem; margin-top: 2rem; }
+  .tip-card {
+    background: var(--paper); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 1.3rem;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+  }
+  .tip-icon { font-size: 1.8rem; margin-bottom: 0.6rem; display: block; }
+  .tip-title { font-weight: 600; color: var(--ink); margin-bottom: 0.4rem; }
+  .tip-text { font-size: 0.84rem; color: var(--muted); line-height: 1.65; }
+
+  /* ── FOOTER ───────────────────────────────────── */
+  footer {
+    background: var(--ink); color: rgba(255,255,255,0.6);
+    padding: 3rem 2rem; text-align: center; font-size: 0.82rem;
+  }
+  footer .f-title { font-family: 'Lora', serif; color: #F9D68A; font-size: 1.2rem; margin-bottom: 0.5rem; }
+
+  /* ── COLOR HELPERS ────────────────────────────── */
+  .c-vn { background: #FEF2F0; color: #DC4B2A; }
+  .c-kh { background: #F5F3FF; color: #7C3AED; }
+  .c-mk { background: #ECFDF5; color: #059669; }
+  .c-ha { background: #E0F2FE; color: #0284C7; }
+  .c-dn { background: #FFFBEB; color: #D97706; }
+
+  .reveal { opacity:0; transform:translateY(22px); transition: opacity .5s ease, transform .5s ease; }
+  .revealed { opacity:1; transform:none; }
+
+  @media(max-width:640px){
+    .nav-links{display:none;}
+    .hero-content{padding:2rem 1.5rem 2.5rem;}
+    .photo-strip{grid-template-columns:1fr 1fr;grid-template-rows:180px 180px;}
+    .photo-strip .p-main{grid-row:1;grid-column:1/3;}
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-brand" href="#">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="7.5" stroke="#B45309" stroke-width="1.2"/><path d="M5.5 9 Q9 5 12.5 9 Q9 13 5.5 9Z" fill="#B45309" opacity=".6"/></svg>
+    Vietnam & Cambogia
+  </a>
+  <div class="nav-links">
+    <a href="#galleria">Galleria</a>
+    <a href="#mappa">Mappa</a>
+    <a href="#itinerario">Itinerario</a>
+    <a href="#costi">Costi</a>
+    <a href="#consigli">Consigli</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-img"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-flags">
+      <span class="flag-tag">🇻🇳 Vietnam</span>
+      <span class="flag-tag">🇰🇭 Cambogia</span>
+    </div>
+    <h1>Templi, fiumi<br>e <em>acque smeraldo</em></h1>
+    <p class="hero-meta">27 Dicembre 2025 – 13 Gennaio 2026 &nbsp;·&nbsp; 18 giorni &nbsp;·&nbsp; 6 persone</p>
+    <div class="hero-stats">
+      <div class="hstat"><span class="hstat-n">18</span><span class="hstat-l">Giorni</span></div>
+      <div class="hstat"><span class="hstat-n">8</span><span class="hstat-l">Destinazioni</span></div>
+      <div class="hstat"><span class="hstat-n">1</span><span class="hstat-l">Crociera Mekong</span></div>
+      <div class="hstat"><span class="hstat-n">2</span><span class="hstat-l">Paesi</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERIA -->
+<section class="section" id="galleria">
+  <p class="eyebrow reveal">Le destinazioni</p>
+  <h2 class="section-title reveal">Un viaggio tra meraviglie</h2>
+  <p class="section-lead reveal">Dalla baia di Ha Long ai templi di Angkor, dalle lanterne di Hội An al Grande Fiume — ogni giornata riserva qualcosa di indimenticabile.</p>
+
+  <div class="photo-strip reveal">
+    <div class="p-cell p-main">
+      <img onerror="this.onerror=null;this.style.display='none';var d=this.parentNode,p=document.createElement('div');p.className='day-img-placeholder';p.style.cssText='background:linear-gradient(135deg,#0a5c7acc,#0a5c7a66);color:#fff;height:160px;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;';p.innerHTML='<span style=\'font-size:2.2rem\'>🌊</span><span style=\'font-size:11px;font-weight:600;opacity:0.85;font-family:sans-serif\'>Ha Long Bay</span>';d.insertBefore(p,this);" src="https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&fit=crop&w=900&q=82" alt="Baia di Ha Long" loading="lazy">
+      <div class="photo-cap">🌊 Baia di Ha Long — UNESCO</div>
+    </div>
+    <div class="p-cell">
+      <img onerror="this.onerror=null;this.style.display='none';var d=this.parentNode,p=document.createElement('div');p.className='day-img-placeholder';p.style.cssText='background:linear-gradient(135deg,#5b3a29cc,#5b3a2966);color:#fff;height:160px;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;';p.innerHTML='<span style=\'font-size:2.2rem\'>🏯</span><span style=\'font-size:11px;font-weight:600;opacity:0.85;font-family:sans-serif\'>Angkor Wat</span>';d.insertBefore(p,this);" src="https://images.unsplash.com/photo-1503756234508-e32369269dde?auto=format&fit=crop&w=600&q=82" alt="Angkor Wat" loading="lazy">
+      <div class="photo-cap">🏯 Angkor Wat — Cambogia</div>
+    </div>
+    <div class="p-cell">
+      <img onerror="this.onerror=null;this.style.display='none';var d=this.parentNode,p=document.createElement('div');p.className='day-img-placeholder';p.style.cssText='background:linear-gradient(135deg,#8B2020cc,#8B202066);color:#fff;height:160px;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;';p.innerHTML='<span style=\'font-size:2.2rem\'>🏮</span><span style=\'font-size:11px;font-weight:600;opacity:0.85;font-family:sans-serif\'>Hội An</span>';d.insertBefore(p,this);" src="https://images.unsplash.com/photo-1555400038-63f5ba517a47?auto=format&fit=crop&w=600&q=82" alt="Hoi An lanterne" loading="lazy">
+      <div class="photo-cap">🏮 Hội An — Città delle Lanterne</div>
+    </div>
+    <div class="p-cell">
+      <img onerror="this.onerror=null;this.style.display='none';var d=this.parentNode,p=document.createElement('div');p.className='day-img-placeholder';p.style.cssText='background:linear-gradient(135deg,#1a5c3acc,#1a5c3a66);color:#fff;height:160px;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;';p.innerHTML='<span style=\'font-size:2.2rem\'>🛶</span><span style=\'font-size:11px;font-weight:600;opacity:0.85;font-family:sans-serif\'>Mekong</span>';d.insertBefore(p,this);" src="https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=600&q=82" alt="Mekong delta" loading="lazy">
+      <div class="photo-cap">🛶 Delta del Mekong</div>
+    </div>
+    <div class="p-cell">
+      <img onerror="this.onerror=null;this.style.display='none';var d=this.parentNode,p=document.createElement('div');p.className='day-img-placeholder';p.style.cssText='background:linear-gradient(135deg,#1a3a5ccc,#1a3a5c66);color:#fff;height:160px;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;';p.innerHTML='<span style=\'font-size:2.2rem\'>🏙️</span><span style=\'font-size:11px;font-weight:600;opacity:0.85;font-family:sans-serif\'>Ho Chi Minh</span>';d.insertBefore(p,this);" src="https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=600&q=82" alt="Ho Chi Minh City" loading="lazy">
+      <div class="photo-cap">🏙️ Ho Chi Minh City</div>
+    </div>
+  </div>
+</section>
+
+<!-- MAPPA -->
+<div class="map-section" id="mappa">
+  <div class="map-inner">
+    <p class="eyebrow reveal">La rotta</p>
+    <h2 class="section-title reveal">L'itinerario sulla mappa</h2>
+    <p class="section-lead reveal">Clicca sui segnaposti per vedere i dettagli di ogni tappa. La linea tratteggiata indica i voli interni, quella continua i trasporti via terra o acqua.</p>
+    <div id="travel-map" class="reveal"></div>
+    <div class="map-legend reveal">
+      <div class="leg"><div class="leg-dot" style="background:#DC4B2A"></div>Vietnam</div>
+      <div class="leg"><div class="leg-dot" style="background:#7C3AED"></div>Cambogia</div>
+      <div class="leg"><div class="leg-dot" style="background:#059669"></div>Mekong / Trasferimento acqua</div>
+      <div class="leg"><div class="leg-dot" style="background:#0284C7"></div>Ha Long Bay</div>
+      <div class="leg"><div class="leg-dot" style="background:#D97706"></div>Da Nang / Hội An</div>
+      <div class="leg" style="margin-left:auto;font-size:0.75rem;color:var(--muted);">— tratto terra/acqua &nbsp;·&nbsp; ✦ volo interno</div>
+    </div>
+  </div>
+</div>
+
+<!-- ITINERARY -->
+<section class="section" id="itinerario">
+  <p class="eyebrow reveal">Giorno per giorno</p>
+  <h2 class="section-title reveal">18 giorni di viaggio</h2>
+  <p class="section-lead reveal">Pensato per gruppi misti con anziani e giovani: ritmo equilibrato, tappe accessibili, momenti di relax alternati a esperienze indimenticabili.</p>
+
+  <!-- FASE 1 -->
+  <div class="reveal">
+    <div class="phase-title">
+      <div class="phase-pip" style="background:#DC4B2A"></div>
+      <div class="phase-name">Saigon & Delta del Mekong</div>
+      <div class="phase-range">27–30 Dic · 4 giorni</div>
+    </div>
+    <div class="days-grid">
+
+      <div class="day-card">
+        <img class="day-img" onerror="this.onerror=null;this.style.display='none';var d=this.parentNode,p=document.createElement('div');p.className='day-img-placeholder';p.style.cssText='background:linear-gradient(135deg,#1a3a5ccc,#1a3a5c66);color:#fff;height:160px;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;';p.innerHTML='<span style=\'font-size:2.2rem\'>🏙️</span><span style=\'font-size:11px;font-weight:600;opacity:0.85;font-family:sans-serif\'>Ho Chi Minh</span>';d.insertBefore(p,this);" src="https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=600&q=80" alt="Saigon skyline" loading="lazy">
+        <div class="day-body">
+          <div class="day-head">
+            <div class="day-badge c-vn"><span class="dn">27</span><span>DIC</span></div>
+            <div class="day-info"><h3>Arrivo a Ho Chi Minh City</h3><div class="day-loc">✈ Volo dall'Italia · Distretto 1</div></div>
+          </div>
+          <p class="day-desc">Atterraggio tardo pomeriggio. Check-in nel Distretto 1. Prima passeggiata serale su Đồng Khởi, cena con phở e bánh mì. Il caos di Saigon è già uno spettacolo.</p>
+          <div class="chips"><span class="chip">🌃 Đồng Khởi</span><span class="chip">🍜 Cena benvenuto</span><span class="chip">🏨 ~70€/camera</span></div>
+        </div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-img-placeholder c-vn">🏛️</div>
+        <div class="day-body">
+          <div class="day-head">
+            <div class="day-badge c-vn"><span class="dn">28</span><span>DIC</span></div>
+            <div class="day-info"><h3>Saigon storica + Cu Chi</h3><div class="day-loc">Ho Chi Minh City</div></div>
+          </div>
+          <p class="day-desc">Palazzo della Riunificazione, Cattedrale Notre-Dame, Ufficio Postale coloniale. Pomeriggio: Cu Chi Tunnels (versione allargata, accessibile agli anziani).</p>
+          <div class="chips"><span class="chip">🏛️ Palazzo Riunif.</span><span class="chip">⛪ Notre-Dame</span><span class="chip">🕳️ Cu Chi ~7€</span></div>
+        </div>
+      </div>
+
+      <div class="day-card">
+        <img class="day-img" onerror="this.onerror=null;this.style.display='none';var d=this.parentNode,p=document.createElement('div');p.className='day-img-placeholder';p.style.cssText='background:linear-gradient(135deg,#1a5c3acc,#1a5c3a66);color:#fff;height:160px;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;';p.innerHTML='<span style=\'font-size:2.2rem\'>🛶</span><span style=\'font-size:11px;font-weight:600;opacity:0.85;font-family:sans-serif\'>Mekong</span>';d.insertBefore(p,this);" src="https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=600&q=80" alt="Mekong Delta" loading="lazy">
+        <div class="day-body">
+          <div class="day-head">
+            <div class="day-badge c-mk"><span class="dn">29</span><span>DIC</span></div>
+            <div class="day-info"><h3>Delta — Cần Thơ</h3><div class="day-loc">Mỹ Tho → Cần Thơ · 3h bus</div></div>
+          </div>
+          <p class="day-desc">Bus privato al delta. Giro in barca nei canali, mercato galleggiante di Cái Răng all'alba. Pranzo in famiglia locale. Pernottamento autentico a Cần Thơ.</p>
+          <div class="chips"><span class="chip">🛶 Barca canali</span><span class="chip">🏪 Mercato galleggiante</span><span class="chip">🌾 Riso</span></div>
+        </div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-star">⭐ Tappa iconica del viaggio</div>
+        <div class="day-img-placeholder c-mk">🛥️</div>
+        <div class="day-body">
+          <div class="day-head">
+            <div class="day-badge c-mk"><span class="dn">30</span><span>DIC</span></div>
+            <div class="day-info"><h3>Mekong → Cambogia in barca!</h3><div class="day-loc">Châu Đốc → Phnom Penh via fiume</div></div>
+          </div>
+          <p class="day-desc">Bus a Châu Đốc (3h), poi barca veloce sul Mekong fino a Phnom Penh (5–6h). Il confine si attraversa sull'acqua tra villaggi galleggianti e campi di riso.</p>
+          <div class="chips"><span class="chip">🛥️ Barca Mekong ~30€</span><span class="chip">🛂 Confine via acqua</span><span class="chip">🌅 Tramonto sul fiume</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FASE 2 -->
+  <div class="reveal">
+    <div class="phase-title">
+      <div class="phase-pip" style="background:#7C3AED"></div>
+      <div class="phase-name">Cambogia — Phnom Penh & Angkor</div>
+      <div class="phase-range">31 Dic – 5 Gen · 6 giorni</div>
+    </div>
+    <div class="days-grid">
+
+      <div class="day-card">
+        <div class="day-star">🎆 Capodanno sul Riverside!</div>
+        <div class="day-img-placeholder c-kh">👑</div>
+        <div class="day-body">
+          <div class="day-head">
+            <div class="day-badge c-kh"><span class="dn">31</span><span>DIC</span></div>
+            <div class="day-info"><h3>Phnom Penh — Capodanno</h3><div class="day-loc">Capitale della Cambogia</div></div>
+          </div>
+          <p class="day-desc">Palazzo Reale, Pagoda d'Argento, Wat Phnom. Pomeriggio: Museo Tuol Sleng (intenso ma fondamentale). Sera: festa di Capodanno sul Riverside con fuochi d'artificio.</p>
+          <div class="chips"><span class="chip">👑 Palazzo Reale</span><span class="chip">🕯️ Tuol Sleng</span><span class="chip">🎆 Fuochi</span></div>
+        </div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-img-placeholder c-kh">✈️</div>
+        <div class="day-body">
+          <div class="day-head">
+            <div class="day-badge c-kh"><span class="dn">1</span><span>GEN</span></div>
+            <div class="day-info"><h3>Verso Siem Reap</h3><div class="day-loc">Phnom Penh → Siem Reap</div></div>
+          </div>
+          <p class="day-desc">Bus VIP (6h) o volo domestico (40 min, ~60€). Arrivo, riposo meritato. Serata nel mercato notturno di Pub Street — cibo di strada e atmosfera vivace.</p>
+          <div class="chips"><span class="chip">✈ Volo ~60€</span><span class="chip">🌆 Pub Street</span><span class="chip">🛖 Hotel ~60€</span></div>
+        </div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-star">⭐ L'alba più bella dell'Asia</div>
+        <img class="day-img" onerror="this.onerror=null;this.style.display='none';var d=this.parentNode,p=document.createElement('div');p.className='day-img-placeholder';p.style.cssText='background:linear-gradient(135deg,#5b3a29cc,#5b3a2966);color:#fff;height:160px;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;';p.innerHTML='<span style=\'font-size:2.2rem\'>🏯</span><span style=\'font-size:11px;font-weight:600;opacity:0.85;font-family:sans-serif\'>Angkor Wat</span>';d.insertBefore(p,this);" src="https://images.unsplash.com/photo-1503756234508-e32369269dde?auto=format&fit=crop&w=600&q=80" alt="Angkor Wat" loading="lazy">
+        <div class="day-body">
+          <div class="day-head">
+            <div class="day-badge c-kh"><span class="dn">2</span><span>GEN</span></div>
+            <div class="day-info"><h3>Angkor Wat all'alba</h3><div class="day-loc">Partenza ore 4:30</div></div>
+          </div>
+          <p class="day-desc">Alba con riflesso sull'acqua. Angkor Wat, Bayon (le 216 facce), Ta Prohm (il tempio degli alberi). Tuk-tuk privato tutto il giorno — confortevole per anziani.</p>
+          <div class="chips"><span class="chip">🌅 Alba ~37€ pass</span><span class="chip">🏯 Angkor Wat</span><span class="chip">😊 Bayon</span><span class="chip">🌳 Ta Prohm</span></div>
+        </div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-img-placeholder c-kh">🐘</div>
+        <div class="day-body">
+          <div class="day-head">
+            <div class="day-badge c-kh"><span class="dn">3</span><span>GEN</span></div>
+            <div class="day-info"><h3>Angkor Thom e artigiani</h3><div class="day-loc">Siem Reap</div></div>
+          </div>
+          <p class="day-desc">Angkor Thom, Baphuon, Terrazza degli Elefanti. Pomeriggio: laboratorio tessitori di seta cambogiana. Serata: lezione di cucina khmer.</p>
+          <div class="chips"><span class="chip">🐘 Terrazza Elefanti</span><span class="chip">🧵 Seta locale</span><span class="chip">👨‍🍳 Cucina khmer</span></div>
+        </div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-img-placeholder c-kh">🚢</div>
+        <div class="day-body">
+          <div class="day-head">
+            <div class="day-badge c-kh"><span class="dn">4</span><span>GEN</span></div>
+            <div class="day-info"><h3>Lago Tonlé Sap</h3><div class="day-loc">Siem Reap</div></div>
+          </div>
+          <p class="day-desc">Crociera sul Tonlé Sap, il lago più grande del Sud-Est Asiatico. Villaggi galleggianti. Pomeriggio: spa locale. Sera: spettacolo di danza Apsara.</p>
+          <div class="chips"><span class="chip">🚢 Tonlé Sap</span><span class="chip">💆 Spa ~20€/h</span><span class="chip">💃 Danza Apsara</span></div>
+        </div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-img-placeholder c-dn">✈️</div>
+        <div class="day-body">
+          <div class="day-head">
+            <div class="day-badge c-kh"><span class="dn">5</span><span>GEN</span></div>
+            <div class="day-info"><h3>Volo → Da Nang</h3><div class="day-loc">Siem Reap → Vietnam Centrale</div></div>
+          </div>
+          <p class="day-desc">Volo via Saigon. Arrivo a Da Nang. Check-in sul lungomare My Khe — spiaggia sabbiosa e lunghissima. Cena di pesce fresco al porto.</p>
+          <div class="chips"><span class="chip">✈ ~80–120€</span><span class="chip">🏖️ My Khe Beach</span><span class="chip">🐟 Porto</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FASE 3 -->
+  <div class="reveal">
+    <div class="phase-title">
+      <div class="phase-pip" style="background:#D97706"></div>
+      <div class="phase-name">Da Nang & Hội An</div>
+      <div class="phase-range">6–8 Gen · 3 giorni</div>
+    </div>
+    <div class="days-grid">
+
+      <div class="day-card">
+        <div class="day-img-placeholder c-dn">⛰️</div>
+        <div class="day-body">
+          <div class="day-head">
+            <div class="day-badge c-dn"><span class="dn">6</span><span>GEN</span></div>
+            <div class="day-info"><h3>Marble Mountains & Dragon Bridge</h3><div class="day-loc">Da Nang</div></div>
+          </div>
+          <p class="day-desc">Marble Mountains (5 colline sacre con grotte e pagode, ascensore disponibile). Museo Cham. Sera: Dragon Bridge che sputa fuoco — spettacolo gratuito ogni sabato.</p>
+          <div class="chips"><span class="chip">⛰️ Marble Mountains</span><span class="chip">🐉 Dragon Bridge</span><span class="chip">🏺 Museo Cham</span></div>
+        </div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-star">⭐ UNESCO World Heritage</div>
+        <img class="day-img" onerror="this.onerror=null;this.style.display='none';var d=this.parentNode,p=document.createElement('div');p.className='day-img-placeholder';p.style.cssText='background:linear-gradient(135deg,#8B2020cc,#8B202066);color:#fff;height:160px;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;';p.innerHTML='<span style=\'font-size:2.2rem\'>🏮</span><span style=\'font-size:11px;font-weight:600;opacity:0.85;font-family:sans-serif\'>Hội An</span>';d.insertBefore(p,this);" src="https://images.unsplash.com/photo-1555400038-63f5ba517a47?auto=format&fit=crop&w=600&q=80" alt="Hoi An" loading="lazy">
+        <div class="day-body">
+          <div class="day-head">
+            <div class="day-badge c-dn"><span class="dn">7</span><span>GEN</span></div>
+            <div class="day-info"><h3>Hội An — Città delle Lanterne</h3><div class="day-loc">Da Nang → Hội An (30 min)</div></div>
+          </div>
+          <p class="day-desc">Città Antica UNESCO, Ponte Giapponese, case commerciali cinesi. Pranzo con cao lầu. Sera: centinaia di lanterne che fluttuano sul fiume Thu Bồn.</p>
+          <div class="chips"><span class="chip">🏮 Lanterne</span><span class="chip">🌉 Ponte Giapponese</span><span class="chip">🍜 Cao Lầu</span></div>
+        </div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-img-placeholder c-dn">🌉</div>
+        <div class="day-body">
+          <div class="day-head">
+            <div class="day-badge c-dn"><span class="dn">8</span><span>GEN</span></div>
+            <div class="day-info"><h3>Golden Bridge + Bà Nà Hills</h3><div class="day-loc">Da Nang → Hanoi sera</div></div>
+          </div>
+          <p class="day-desc">Bà Nà Hills: Golden Bridge sorretto da mani giganti a 1.400m (foto incredibili!). Pomeriggio: spiaggia o spa. Sera: volo per Hanoi.</p>
+          <div class="chips"><span class="chip">🌉 Golden Bridge</span><span class="chip">🚡 Funivia ~25€</span><span class="chip">✈ → Hanoi sera</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FASE 4 -->
+  <div class="reveal">
+    <div class="phase-title">
+      <div class="phase-pip" style="background:#0284C7"></div>
+      <div class="phase-name">Hanoi & Baia di Ha Long</div>
+      <div class="phase-range">9–12 Gen · 4 giorni</div>
+    </div>
+    <div class="days-grid">
+
+      <div class="day-card">
+        <div class="day-img-placeholder c-ha">🌊</div>
+        <div class="day-body">
+          <div class="day-head">
+            <div class="day-badge c-ha"><span class="dn">9</span><span>GEN</span></div>
+            <div class="day-info"><h3>Hanoi — La Capitale</h3><div class="day-loc">Vietnam del Nord</div></div>
+          </div>
+          <p class="day-desc">Lago Hoan Kiem, Tempio della Letteratura (Van Mieu), Quartiere Antico con le 36 vie. Mausoleo di Ho Chi Minh (esterno). Cena con bún chả.</p>
+          <div class="chips"><span class="chip">🌊 Lago Hoan Kiem</span><span class="chip">📚 Van Mieu</span><span class="chip">🏘️ Quartiere Antico</span></div>
+        </div>
+      </div>
+
+      <div class="day-card">
+        <img class="day-img" onerror="this.onerror=null;this.style.display='none';var d=this.parentNode,p=document.createElement('div');p.className='day-img-placeholder';p.style.cssText='background:linear-gradient(135deg,#0a5c7acc,#0a5c7a66);color:#fff;height:160px;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;';p.innerHTML='<span style=\'font-size:2.2rem\'>🌊</span><span style=\'font-size:11px;font-weight:600;opacity:0.85;font-family:sans-serif\'>Ha Long Bay</span>';d.insertBefore(p,this);" src="https://images.unsplash.com/photo-1528360983277-13d401cdc186?auto=format&fit=crop&w=600&q=80" alt="Ha Long Bay" loading="lazy">
+        <div class="day-body">
+          <div class="day-head">
+            <div class="day-badge c-ha"><span class="dn">10</span><span>GEN</span></div>
+            <div class="day-info"><h3>Imbarco su Ha Long</h3><div class="day-loc">Hanoi → Ha Long (3h bus)</div></div>
+          </div>
+          <p class="day-desc">Bus privato fino al porto (3h). Imbarco sulla giunca. Navigazione tra i faraglioni di calcare. Kayak tra le grotte. Tramonto in baia. Cena di frutti di mare a bordo.</p>
+          <div class="chips"><span class="chip">⛵ Crociera giunca</span><span class="chip">🚣 Kayak incluso</span><span class="chip">🦑 Frutti di mare</span></div>
+        </div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-star">⭐ UNESCO — Probabilmente il momento più bello</div>
+        <div class="day-img-placeholder c-ha">🌅</div>
+        <div class="day-body">
+          <div class="day-head">
+            <div class="day-badge c-ha"><span class="dn">11</span><span>GEN</span></div>
+            <div class="day-info"><h3>Ha Long Bay — Giorno in baia</h3><div class="day-loc">In navigazione</div></div>
+          </div>
+          <p class="day-desc">Alba sulla baia — un'immagine che non si dimentica. Grotte di Hang Sung Sot. Villaggio galleggiante di Vung Vieng. Tai chi sul ponte all'alba. Tutto incluso nella crociera.</p>
+          <div class="chips"><span class="chip">🌅 Alba sulla baia</span><span class="chip">🕳️ Grotte Sung Sot</span><span class="chip">🏘️ Villaggio galleggiante</span><span class="chip">🧘 Tai Chi</span></div>
+        </div>
+      </div>
+
+      <div class="day-card">
+        <div class="day-img-placeholder c-ha">🎨</div>
+        <div class="day-body">
+          <div class="day-head">
+            <div class="day-badge c-ha"><span class="dn">12</span><span>GEN</span></div>
+            <div class="day-info"><h3>Rientro Hanoi — Sera libera</h3><div class="day-loc">Ha Long → Hanoi</div></div>
+          </div>
+          <p class="day-desc">Colazione finale in baia, sbarco. Rientro a Hanoi (3h). Pomeriggio: museo delle belle arti o shopping al mercato di Dong Xuan. Cena d'addio: bún chả.</p>
+          <div class="chips"><span class="chip">🎨 Museo Belle Arti</span><span class="chip">🛍️ Dong Xuan</span><span class="chip">🍚 Bún chả</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- FASE 5 -->
+  <div class="reveal">
+    <div class="phase-title">
+      <div class="phase-pip" style="background:#B45309"></div>
+      <div class="phase-name">Rientro in Italia</div>
+      <div class="phase-range">13 Gen</div>
+    </div>
+    <div class="days-grid">
+      <div class="day-card">
+        <div class="day-img-placeholder" style="background:#FFFBEB;color:#B45309;">✈️</div>
+        <div class="day-body">
+          <div class="day-head">
+            <div class="day-badge" style="background:#FFFBEB;color:#B45309;"><span class="dn">13</span><span>GEN</span></div>
+            <div class="day-info"><h3>Rientro da Hanoi</h3><div class="day-loc">Hanoi (HAN) → Italia ✈</div></div>
+          </div>
+          <p class="day-desc">Mattino libero per ultimi acquisti (seta, lacca, pho istantaneo!). Trasferimento all'aeroporto Nội Bài. Volo con scalo verso l'Italia. Arrivederci Vietnam!</p>
+          <div class="chips"><span class="chip">✈ HAN → ITA</span><span class="chip">🛍️ Ultimi acquisti</span><span class="chip">🌸 Arrivederci!</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- COSTI -->
+<div class="bg-cream" id="costi">
+  <section class="section">
+    <p class="eyebrow reveal">Budget stimato</p>
+    <h2 class="section-title reveal">Costi per persona</h2>
+    <p class="section-lead reveal">Stime in euro per persona, camera doppia condivisa. Alta stagione: prenotare con almeno 5–6 mesi di anticipo.</p>
+    <div class="cost-grid reveal">
+      <div class="cost-card"><span class="cost-icon">✈️</span><div class="cost-label">Voli A/R + interni</div><div class="cost-val">950–1.400€</div><div class="cost-sub">3 voli interni inclusi</div></div>
+      <div class="cost-card"><span class="cost-icon">🏨</span><div class="cost-label">Hotel (16 notti)</div><div class="cost-val">600–1.100€</div><div class="cost-sub">Camera doppia 3★–4★</div></div>
+      <div class="cost-card"><span class="cost-icon">⛵</span><div class="cost-label">Crociera Ha Long 2n</div><div class="cost-val">180–320€</div><div class="cost-sub">Giunca con pasti inclusi</div></div>
+      <div class="cost-card"><span class="cost-icon">🍜</span><div class="cost-label">Pasti (18 giorni)</div><div class="cost-val">220–400€</div><div class="cost-sub">Street food + ristoranti</div></div>
+      <div class="cost-card"><span class="cost-icon">🎟️</span><div class="cost-label">Tour e ingressi</div><div class="cost-val">280–450€</div><div class="cost-sub">Angkor, Bà Nà, guide</div></div>
+      <div class="cost-card"><span class="cost-icon">🛶</span><div class="cost-label">Trasporti locali</div><div class="cost-val">120–200€</div><div class="cost-sub">Tuk-tuk, taxi, Mekong</div></div>
+      <div class="cost-card"><span class="cost-icon">📋</span><div class="cost-label">Visti</div><div class="cost-val">55–75€</div><div class="cost-sub">Vietnam ~25€ + KH ~35€</div></div>
+      <div class="cost-card"><span class="cost-icon">💆</span><div class="cost-label">Extra / Spa</div><div class="cost-val">80–200€</div><div class="cost-sub">Shopping, massaggi</div></div>
+    </div>
+    <div class="cost-total-box reveal">
+      <div>
+        <div class="ct-label">Totale stimato per persona</div>
+        <div class="ct-val">2.500 – 4.100 €</div>
+        <div class="ct-sub">Per 6 persone: ~15.000–24.000 € totali · Esclusa assicurazione viaggio (~70–100€/p)</div>
+      </div>
+      <div style="text-align:right">
+        <div style="opacity:0.7;font-size:0.8rem;margin-bottom:4px;">Con tour privati per 6 persone</div>
+        <div style="font-family:'Lora',serif;font-size:1.8rem;font-weight:600;">–15–20%</div>
+        <div style="opacity:0.7;font-size:0.75rem;">rispetto a tour collettivi</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- CONSIGLI -->
+<section class="section" id="consigli">
+  <p class="eyebrow reveal">Prima di partire</p>
+  <h2 class="section-title reveal">Consigli pratici</h2>
+  <div class="tips-grid reveal">
+    <div class="tip-card"><span class="tip-icon">🧓</span><div class="tip-title">Accessibilità per anziani</div><div class="tip-text">Angkor: percorsi pianeggianti, evitare le scale del tempio centrale. Tuk-tuk privato per i templi. Bà Nà Hills: ascensore disponibile. Ha Long: cabine al piano basso su richiesta. Hotel con ascensore a ogni tappa.</div></div>
+    <div class="tip-card"><span class="tip-icon">🛥️</span><div class="tip-title">Mekong: come prenotare</div><div class="tip-text">Operatori consigliati: <strong>Mekong Express</strong> (più confortevole), Capitol Tours (economico). Partenza da Châu Đốc ore 7:30. Prenotare online almeno 4–6 settimane prima a dicembre — si esaurisce!</div></div>
+    <div class="tip-card"><span class="tip-icon">⛵</span><div class="tip-title">Ha Long: scegliere la crociera</div><div class="tip-text">Evitare le barche "budget". Consigliati: Paradise Cruises, Orchid Classic, Bhaya — crociere 2 notti con pasti, kayak, guida inclusi. Prenotare 3–4 mesi prima per dicembre.</div></div>
+    <div class="tip-card"><span class="tip-icon">🌡️</span><div class="tip-title">Clima a gennaio</div><div class="tip-text">Sud (Saigon, Cambogia): stagione secca, 28–33°C ☀️. Centro (Da Nang): 22–26°C, qualche pioggia possibile. Nord (Hanoi, Ha Long): fresco e nebbioso, 16–22°C — portare uno strato caldo per Ha Long di notte.</div></div>
+    <div class="tip-card"><span class="tip-icon">📋</span><div class="tip-title">Visti e salute</div><div class="tip-text">Vietnam: e-visa online ~25€. Cambogia: e-visa ~36€. Vaccinazioni consigliate: epatite A/B, tifo, tetano. Repellente DEET obbligatorio. Assicurazione con copertura medica elevata.</div></div>
+    <div class="tip-card"><span class="tip-icon">🎄</span><div class="tip-title">Alta stagione: prenota subito</div><div class="tip-text">Dicembre–gennaio è il picco. Hotel a Siem Reap e Phnom Penh si esauriscono per Capodanno con prezzi raddoppiati. Voli interni: prenotare entro giugno. Hotel: entro agosto–settembre.</div></div>
+  </div>
+</section>
+
+<footer>
+  <div class="f-title">Buon viaggio! 🌏</div>
+  <p>Vietnam & Cambogia · 27 Dic – 13 Gen · 18 giorni · 6 persone</p>
+  <p style="margin-top:0.4rem;opacity:.5;font-size:0.75rem;">Prezzi indicativi — verificare disponibilità al momento della prenotazione · Foto: Unsplash (licenza free)</p>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ─── MAP SETUP ───────────────────────────────────────────────────────────────
+const map = L.map('travel-map', { zoomControl: true, scrollWheelZoom: false })
+  .setView([14.0, 106.5], 5);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+  maxZoom: 18
+}).addTo(map);
+
+// Custom marker factory
+function mkIcon(emoji, color) {
+  return L.divIcon({
+    html: `<div style="
+      background:${color};
+      color:#fff;
+      width:38px;height:38px;
+      border-radius:50% 50% 50% 0;
+      transform:rotate(-45deg);
+      display:flex;align-items:center;justify-content:center;
+      box-shadow:0 3px 12px rgba(0,0,0,0.3);
+      border:2.5px solid rgba(255,255,255,0.9);
+    "><span style="transform:rotate(45deg);font-size:16px;">${emoji}</span></div>`,
+    iconSize: [38, 38],
+    iconAnchor: [19, 38],
+    popupAnchor: [0, -42],
+    className: ''
+  });
+}
+
+// ─── WAYPOINTS (coordinate verificate) ───────────────────────────────────────
+// Châu Đốc: 10.698°N 105.095°E  (NO di Cần Thơ, confine cambogiano)
+// Cần Thơ:  10.034°N 105.786°E
+// Mekong scorre da NW a SE in questo tratto
+const stops = [
+  { latlng: [10.823, 106.630], emoji: '🏙️', color: '#DC4B2A', label: 'Ho Chi Minh City',
+    days: '27–28 Dic', desc: 'Palazzo della Riunificazione, Notre-Dame, Cu Chi Tunnels. Punto di partenza del viaggio.' },
+  { latlng: [10.034, 105.786], emoji: '🛶', color: '#059669', label: 'Mekong Delta — Cần Thơ',
+    days: '29 Dic', desc: 'Mercato galleggiante di Cái Răng all\'alba, giro in barca nei canali.' },
+  { latlng: [10.698, 105.095], emoji: '🛥️', color: '#059669', label: 'Châu Đốc',
+    days: '30 Dic mattino', desc: 'Da qui parte la barca sul Mekong verso la Cambogia — tappa autentica e iconica!' },
+  { latlng: [11.562, 104.916], emoji: '👑', color: '#7C3AED', label: 'Phnom Penh',
+    days: '30 Dic – 1 Gen', desc: 'Palazzo Reale, Tuol Sleng, Wat Phnom. Capodanno sul Riverside!' },
+  { latlng: [13.363, 103.860], emoji: '🏯', color: '#7C3AED', label: 'Siem Reap — Angkor',
+    days: '1–5 Gen', desc: 'Angkor Wat all\'alba, Bayon, Ta Prohm, Angkor Thom, Tonlé Sap.' },
+  { latlng: [10.823, 106.630], /* HCM transit — no marker */ skip: true },
+  { latlng: [16.047, 108.206], emoji: '🐉', color: '#D97706', label: 'Da Nang',
+    days: '5–8 Gen', desc: 'Marble Mountains, Dragon Bridge, Golden Bridge a Bà Nà Hills. Spiaggia My Khe.' },
+  { latlng: [15.880, 108.338], emoji: '🏮', color: '#D97706', label: 'Hội An',
+    days: '7 Gen', desc: 'Città Antica UNESCO, Ponte Giapponese, lanterne sul fiume Thu Bồn. Una sera magica.' },
+  { latlng: [21.028, 105.834], emoji: '🌆', color: '#DC4B2A', label: 'Hanoi',
+    days: '9–10 Gen + 12–13 Gen', desc: 'Lago Hoan Kiem, Tempio della Letteratura, Quartiere Antico, bún chả.' },
+  { latlng: [20.910, 107.183], emoji: '🌊', color: '#0284C7', label: 'Baia di Ha Long',
+    days: '10–12 Gen', desc: 'UNESCO World Heritage. 2 notti in crociera su giunca tra i faraglioni. Alba memorabile.' },
+];
+
+stops.forEach(s => {
+  if (s.skip) return;
+  const m = L.marker(s.latlng, { icon: mkIcon(s.emoji, s.color) }).addTo(map);
+  m.bindPopup(`
+    <div style="font-family:'Source Sans 3',sans-serif;min-width:210px;padding:2px;">
+      <div style="font-size:1rem;font-weight:600;color:#1C1917;margin-bottom:3px;">${s.emoji} ${s.label}</div>
+      <div style="font-size:0.73rem;color:#B45309;font-weight:600;margin-bottom:7px;text-transform:uppercase;letter-spacing:0.05em;">${s.days}</div>
+      <div style="font-size:0.83rem;color:#44403C;line-height:1.55;">${s.desc}</div>
+    </div>
+  `, { maxWidth: 270 });
+});
+
+// ─── ROUTE LINES (percorso cronologico corretto) ──────────────────────────────
+
+// 1. HCM → Cần Thơ (strada, direzione SO)
+L.polyline([[10.823,106.630],[10.034,105.786]], {
+  color:'#059669', weight:3, opacity:0.85 }).addTo(map);
+
+// 2. Cần Thơ → Châu Đốc (strada lungo il Mekong, direzione NO)
+L.polyline([[10.034,105.786],[10.698,105.095]], {
+  color:'#059669', weight:3, opacity:0.85 }).addTo(map);
+
+// 3. Châu Đốc → Phnom Penh (barca sul Mekong 🛥️)
+L.polyline([[10.698,105.095],[11.562,104.916]], {
+  color:'#059669', weight:3.5, opacity:0.9,
+  dashArray: '1 0' // linea piena = acqua
+}).addTo(map);
+
+// 4. Phnom Penh → Siem Reap (strada, ~6h a NO)
+L.polyline([[11.562,104.916],[13.363,103.860]], {
+  color:'#7C3AED', weight:2.5, opacity:0.8 }).addTo(map);
+
+// 5. Siem Reap ✈ HCM ✈ Da Nang (volo con scalo, linea curva via HCM)
+L.polyline([[13.363,103.860],[10.823,106.630],[16.047,108.206]], {
+  color:'#D97706', weight:2, opacity:0.55, dashArray:'8 6' }).addTo(map);
+
+// 6. Da Nang → Hội An (strada, 30 min a S)
+L.polyline([[16.047,108.206],[15.880,108.338]], {
+  color:'#D97706', weight:2.5, opacity:0.85 }).addTo(map);
+
+// 7. Da Nang ✈ Hanoi (volo diretto, tratteggio)
+L.polyline([[16.047,108.206],[21.028,105.834]], {
+  color:'#DC4B2A', weight:2, opacity:0.55, dashArray:'8 6' }).addTo(map);
+
+// 8. Hanoi → Ha Long (bus 3h, strada)
+L.polyline([[21.028,105.834],[20.910,107.183]], {
+  color:'#0284C7', weight:3, opacity:0.9 }).addTo(map);
+
+// 9. Ha Long → Hanoi (ritorno, trattino leggero)
+L.polyline([[20.910,107.183],[21.028,105.834]], {
+  color:'#0284C7', weight:1.5, opacity:0.35, dashArray:'4 8' }).addTo(map);
+
+// Legenda distanze numerata
+const legend = L.control({ position: 'bottomleft' });
+legend.onAdd = () => {
+  const d = L.DomUtil.create('div');
+  d.style.cssText = 'background:rgba(255,255,255,0.92);padding:10px 14px;border-radius:10px;font-size:11px;line-height:1.8;box-shadow:0 2px 8px rgba(0,0,0,0.12);font-family:sans-serif;color:#44403C;max-width:200px;';
+  d.innerHTML = `<strong style="font-size:12px;color:#1C1917;">Legenda rotte</strong><br>
+    <span style="color:#059669">━━</span> Terra / Mekong in barca<br>
+    <span style="color:#7C3AED">━━</span> Strada Cambogia<br>
+    <span style="color:#D97706">╌╌</span> Volo con scalo (HCM)<br>
+    <span style="color:#DC4B2A">╌╌</span> Volo diretto<br>
+    <span style="color:#0284C7">━━</span> Bus Hanoi ↔ Ha Long`;
+  return d;
+};
+legend.addTo(map);
+
+// ─── SCROLL REVEAL ────────────────────────────────────────────────────────────
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('revealed'); });
+}, { threshold: 0.07 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
